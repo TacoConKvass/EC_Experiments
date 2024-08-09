@@ -1,7 +1,10 @@
 using EC_Experiments.Common;
 using EC_Experiments.Core;
 using Terraria;
+using Terraria.ID;
 using Terraria.ModLoader;
+
+namespace EC_Experiments.ContentTests;
 
 public class JumpingNPC : ModNPC {
 	public enum ActionPhase {
@@ -17,6 +20,9 @@ public class JumpingNPC : ModNPC {
 		NPC.noGravity = false;
 		NPC.noTileCollide = false;
 		NPC.lifeMax = 10;
+		NPC.EnableComponent<TargetClosestPlayerNPCComponent>().Data.DetectionRange = 320;
+		NPC.EnableComponent<FacePlayerNPCComponent>();
+		NPC.EnableComponent<StompNPCComponent>().Data.Damage = 10;
 	}
 
 	public ActionPhase State { get; set; } = ActionPhase.Idle;
@@ -28,15 +34,12 @@ public class JumpingNPC : ModNPC {
 	}
 
 	public readonly JumpNPCComponent.ComponentData Phase1Jump = new JumpNPCComponent.ComponentData() {
-		TimeBeforeExecution = 3,
-		Height = 10,
-		Distance = 5,
-		TimeAfterExecution = 5,
-		StopAfterJump = true,
-		OnDisabled = new System.Action<NPC>(npc => {
-			(npc.ModNPC as JumpingNPC).State = ActionPhase.Idle;
-			Main.NewText($"switched to {(npc.ModNPC as JumpingNPC).State}");
-		})
+		Height = 5,
+		Distance = 8,
+		HeightVariation = new Core.DataStructures.VariationRange(.8f, 2f),
+		DistanceVariation = new Core.DataStructures.VariationRange(1f, 1.5f),
+		ResetVelocity = true,
+		OnDisabled = new System.Action<NPC>(npc => (npc.ModNPC as JumpingNPC).State = ActionPhase.Idle)
 	};
 
 	public override void AI() {
@@ -48,7 +51,6 @@ public class JumpingNPC : ModNPC {
 		if (Timer == IdleToActionDelay) {
 			Timer = 0;
 			State = ActionPhase.Jumping;
-			NPC.direction = Main.rand.NextFromList([-1, 1]);
 			NPC.EnableComponent<JumpNPCComponent>().Data = Phase1Jump;
 		}
 	}
