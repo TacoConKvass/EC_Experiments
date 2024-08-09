@@ -1,0 +1,3 @@
+displayName = Entity Component Experiments
+author = TacoConKvass
+version = 0.1
